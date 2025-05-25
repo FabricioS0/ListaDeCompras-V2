@@ -1,5 +1,6 @@
 package br.com.livrokotlin.listadecompras
 
+import ProdutoAdapter
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
@@ -16,25 +17,26 @@ class MainActivity : AppCompatActivity() {
 
         val listView = findViewById<ListView>(R.id.list_view_produtos)
         val btnInserir = findViewById<Button>(R.id.btn_inserir)
-        val txtProduto = findViewById<EditText>(R.id.txt_produto)
+        val txtProduto = findViewById<EditText>(R.id.txt_produto
 
-        val produtosAdapter = ArrayAdapter<String>(
-            this,
-            android.R.layout.simple_list_item_1,
-            mutableListOf()
-        )
 
-        listView.adapter = produtosAdapter
+        val	produtosAdapter	=	ProdutoAdapter(this)
 
-        btnInserir.setOnClickListener {
-            val produto = txtProduto.text.toString().trim()
-            if (produto.isNotEmpty()) {
-                produtosAdapter.add(produto)
-                txtProduto.text.clear()
-            }else{
-                txtProduto.error = "Preencha um valor"
-            }
+        list_view_produtos	: override	fun	onResume()	{
+            super.onResume()
+            val	adapter	=	list_view_produtos.adapter	as	ProdutoAdapter
+            adapter.clear()
+            adapter.addAll(produtosGlobal)
         }
+
+
+        btn_adicionar.setOnClickListener	{
+            //Criando	a	Intent	explícita
+            val	intent	=	Intent(this,	CadastroActivity::class.java)
+            //iniciando	a	atividade
+            startActivity(intent)
+        }
+
         listView.setOnItemLongClickListener{
             adapterview: AdapterView<*>, view: View, position: Int, id: Long ->
 
