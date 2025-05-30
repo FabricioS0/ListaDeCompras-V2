@@ -1,6 +1,7 @@
 package br.com.livrokotlin.listadecompras
 
 class Utils {
-    val	produtosGlobal	=	mutableListOf<Produto>()
-
+    companion object {
+        val produtosGlobal = mutableListOf<Produto>()
+    }
 }
