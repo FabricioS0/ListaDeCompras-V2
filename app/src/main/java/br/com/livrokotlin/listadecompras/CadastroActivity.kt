@@ -2,8 +2,11 @@ package br.com.livrokotlin.listadecompras
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import br.com.livrokotlin.listadecompras.Utils.Companion.produtosGlobal
+import androidx.lifecycle.lifecycleScope
+import br.com.livrokotlin.listadecompras.data.AppDatabase
+import br.com.livrokotlin.listadecompras.data.ProdutoEntity
 import br.com.livrokotlin.listadecompras.databinding.ActivityCadastroBinding
+import kotlinx.coroutines.launch
 
 class CadastroActivity : AppCompatActivity() {
 
@@ -14,25 +17,24 @@ class CadastroActivity : AppCompatActivity() {
         binding = ActivityCadastroBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val dao = AppDatabase.getDatabase(this).produtoDao()
+
         binding.btnInserir.setOnClickListener {
-
             val nome = binding.txtProduto.text.toString()
-            val qtd = binding.txtQtd.text.toString()
-            val valor = binding.txtValor.text.toString()
+            val qtd = binding.txtQtd.text.toString().toIntOrNull()
+            val valor = binding.txtValor.text.toString().toDoubleOrNull()
 
-            if (nome.isNotEmpty() && qtd.isNotEmpty() && valor.isNotEmpty()) {
-                val produto = Produto(nome, qtd.toInt(), valor.toDouble())
-                produtosGlobal.add(produto)
+            if (nome.isNotEmpty() && qtd != null && valor != null) {
+                val produto = ProdutoEntity(nome = nome, quantidade = qtd, valor = valor)
 
-                binding.txtProduto.text.clear()
-                binding.txtQtd.text.clear()
-                binding.txtValor.text.clear()
-
-                finish() // Volta para MainActivity
+                lifecycleScope.launch {
+                    dao.inserir(produto)
+                    finish()
+                }
             } else {
-                if (nome.isEmpty()) binding.txtProduto.error = "Preencha o nome do produto"
-                if (qtd.isEmpty()) binding.txtQtd.error = "Preencha a quantidade"
-                if (valor.isEmpty()) binding.txtValor.error = "Preencha o valor"
+                if (nome.isEmpty()) binding.txtProduto.error = "Preencha o nome"
+                if (qtd == null) binding.txtQtd.error = "Preencha a quantidade"
+                if (valor == null) binding.txtValor.error = "Preencha o valor"
             }
         }
     }

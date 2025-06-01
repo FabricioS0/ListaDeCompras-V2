@@ -4,16 +4,19 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
-import android.widget.Button
-import android.widget.EditText
 import android.widget.ListView
+import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import br.com.livrokotlin.listadecompras.data.AppDatabase
+import br.com.livrokotlin.listadecompras.data.ProdutoEntity
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var listView: ListView
-    lateinit var btnAdicionar: Button
-    lateinit var adapter: ProdutoAdapter
+    private lateinit var listView: ListView
+    private lateinit var btnAdicionar: Button
+    private lateinit var adapter: ProdutoAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,20 +29,32 @@ class MainActivity : AppCompatActivity() {
         listView.adapter = adapter
 
         btnAdicionar.setOnClickListener {
-            val intent = Intent(this, CadastroActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, CadastroActivity::class.java))
         }
 
         listView.setOnItemLongClickListener { _, _, position, _ ->
             val item = adapter.getItem(position)
-            adapter.remove(item)
+            if (item != null) {
+                lifecycleScope.launch {
+                    AppDatabase.getDatabase(this@MainActivity).produtoDao().deletar(item)
+                    carregarProdutos()
+                }
+            }
             true
         }
     }
 
     override fun onResume() {
         super.onResume()
-        adapter.clear()
-        adapter.addAll(produtosGlobal)
+        carregarProdutos()
+    }
+
+    private fun carregarProdutos() {
+        val dao = AppDatabase.getDatabase(this).produtoDao()
+        lifecycleScope.launch {
+            val produtos = dao.listarTodos()
+            adapter.clear()
+            adapter.addAll(produtos)
+        }
     }
 }
